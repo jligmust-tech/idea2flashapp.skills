@@ -4,7 +4,7 @@
   and opens the app.
 
 .EXAMPLE
-  pwsh -File scripts/Register-Flashapp.ps1 `
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Register-Flashapp.ps1 `
       -Path flashapps/course-decision/index.html `
       -Title "Course Decision" -Slug course-decision `
       -Archetype decision -Source "blog: How to decide on a course"

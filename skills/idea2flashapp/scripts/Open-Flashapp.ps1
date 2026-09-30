@@ -3,7 +3,7 @@
   Open a flashapp (or the gallery) in the default browser.
 
 .EXAMPLE
-  pwsh -File scripts/Open-Flashapp.ps1 -Path flashapps/course-decision/index.html
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Open-Flashapp.ps1 -Path flashapps/course-decision/index.html
 #>
 [CmdletBinding()]
 param(

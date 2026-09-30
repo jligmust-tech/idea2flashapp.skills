@@ -3,7 +3,7 @@
   Scaffold a new flashapp from the idea2flashapp template.
 
 .EXAMPLE
-  pwsh -File scripts/New-Flashapp.ps1 -Slug course-decision -Title "Course Decision" -Purpose "Should I enroll?"
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts/New-Flashapp.ps1 -Slug course-decision -Title "Course Decision" -Purpose "Should I enroll?"
 #>
 [CmdletBinding()]
 param(

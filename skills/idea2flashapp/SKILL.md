@@ -78,28 +78,32 @@ Follow `reference/flashapp-spec.md` — it is the contract. In short:
 - Every result shows **how** it was derived (which rule fired, which score won).
 - Include an "About this app" section that states the extracted idea + source.
 
-Scaffold with (Windows PowerShell; scripts are optional — see note below):
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/New-Flashapp.ps1 -Slug my-app -Title "My App"
+Scaffold with the cross-platform CLI (paths below are relative to this skill
+directory; any agent on Windows/macOS/Linux can run it):
+```bash
+node scripts/flashapp.mjs new --slug my-app --title "My App"
 ```
 
 ### 5. Register and open
 Write the app to the target project at `flashapps/<slug>/index.html`, then:
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Register-Flashapp.ps1 -Path <app.html> -Title "..." -Slug <slug> -Archetype <type> -Source "<provenance>"
+```bash
+node scripts/flashapp.mjs register --path <app.html> --title "..." --slug <slug> --archetype <type> --source "<provenance>"
 ```
 
 This updates `flashapps/registry.json` and regenerates the
 `flashapps/index.html` gallery, then opens the app in the default browser.
 The user can open the gallery to browse every flashapp they've generated.
+(`node scripts/flashapp.mjs list` shows everything registered.)
 
-> **Scripts are a convenience, not a requirement.** If script execution is
-> blocked or PowerShell is unavailable, do the same steps by hand: copy
-> `assets/template.html` to `flashapps/<slug>/index.html`, replace the
-> `{{TITLE}}`/`{{PURPOSE}}`/`{{SLUG}}` placeholders, then add the entry to
-> `flashapps/registry.json` and add a card to `flashapps/index.html`. Never
-> block the build on the scripts.
+> **Scripts are a convenience, not a requirement — and this skill is not tied to
+> any one agent.** It works for Claude Code, opencode, Codex, Cursor, Gemini CLI,
+> and anything else that reads `SKILL.md` or `AGENTS.md`. If Node is unavailable,
+> a Windows-only PowerShell equivalent exists in `scripts/*.ps1`. If neither can
+> run, do the steps by hand: copy `assets/template.html` to
+> `flashapps/<slug>/index.html`, replace the `{{TITLE}}`/`{{PURPOSE}}`/`{{SLUG}}`
+> placeholders, then add the entry to `flashapps/registry.json` and a card to
+> `flashapps/index.html`. Never block the build on a script.
 
 ### 6. Verify
 Before declaring done:
@@ -126,4 +130,14 @@ use it to apply the idea correctly. Concretely:
 - `reference/archetypes.md` — catalog of flashapp shapes + selection guide.
 - `reference/flashapp-spec.md` — the hard contract every flashapp must meet.
 - `assets/template.html` — the starting shell to copy.
-- `scripts/` — `New-Flashapp.ps1`, `Register-Flashapp.ps1`, `Open-Flashapp.ps1`.
+- `scripts/flashapp.mjs` — cross-platform CLI: `new`, `register`, `open`, `list`.
+- `scripts/*.ps1` — Windows-only equivalent (`New-`, `Register-`, `Open-Flashapp`).
+
+## Portability
+
+This skill is tool-agnostic. The `SKILL.md` frontmatter carries only `name` and
+`description`, the portable subset across skill loaders. Claude Code, opencode
+and other Agent-Skills tools load it directly from a skills directory; Codex,
+Cursor, Gemini CLI and other `AGENTS.md` tools use `AGENTS.md`. The CLI is
+plain Node.js so it behaves the same on every OS. See the repo `README.md` for
+the per-agent install matrix.
