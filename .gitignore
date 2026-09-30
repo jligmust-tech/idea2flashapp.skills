@@ -1,0 +1,8 @@
+# Generated flashapps are created inside the *target* project, not here,
+# but ignore them anyway if someone builds locally in this repo.
+flashapps/
+artifacts/
+*.log
+.DS_Store
+Thumbs.db
+node_modules/

@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Flashapp — {{TITLE}}</title>
+<style>
+  :root{
+    --bg:#0f1115; --surface:#171a21; --border:#262b36;
+    --text:#e8eaed; --muted:#9aa4b2;
+    --accent:#5b8cff; --good:#38c172; --warn:#f0b429; --bad:#e05a5a;
+    --radius:14px; --gap:16px; --maxw:760px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f5f6f8; --surface:#ffffff; --border:#e2e5ea;
+      --text:#14171c; --muted:#5b6472;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    padding:24px 16px 64px;
+  }
+  .wrap{max-width:var(--maxw); margin:0 auto}
+  header{margin-bottom:var(--gap)}
+  h1{font-size:1.5rem; margin:0 0 4px}
+  .sub{color:var(--muted); margin:0}
+  section{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:var(--gap); margin-bottom:var(--gap);
+  }
+  h2{font-size:1rem; text-transform:uppercase; letter-spacing:.04em;
+     color:var(--muted); margin:0 0 12px}
+  label{display:block; font-weight:600; margin:14px 0 6px}
+  .hint{font-weight:400; color:var(--muted); font-size:.85rem; display:block}
+  input[type=number], select, textarea{
+    width:100%; padding:10px 12px; min-height:40px;
+    background:var(--bg); color:var(--text);
+    border:1px solid var(--border); border-radius:10px; font:inherit;
+  }
+  input[type=range]{width:100%; min-height:40px}
+  .row{display:grid; gap:12px; grid-template-columns:1fr 1fr}
+  .val{color:var(--accent); font-variant-numeric:tabular-nums}
+  button{
+    font:inherit; font-weight:600; cursor:pointer; min-height:40px;
+    background:var(--accent); color:#fff; border:0;
+    border-radius:10px; padding:10px 16px;
+  }
+  button.ghost{background:transparent; color:var(--text); border:1px solid var(--border)}
+  .actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px}
+  .verdict{font-size:1.4rem; font-weight:700; margin:0 0 4px}
+  .score{font-variant-numeric:tabular-nums; color:var(--muted)}
+  ul.reasons{margin:12px 0 0; padding-left:20px}
+  ul.reasons li{margin:6px 0}
+  .pos{color:var(--good)} .neg{color:var(--bad)}
+  .about{color:var(--muted); font-size:.9rem}
+  .about code{color:var(--text)}
+  details summary{cursor:pointer; color:var(--muted)}
+  footer{color:var(--muted); font-size:.8rem; text-align:center; margin-top:24px}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  @media (max-width:520px){ .row{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>{{TITLE}}</h1>
+    <p class="sub">{{PURPOSE}}</p>
+  </header>
+
+  <!-- ============ INPUTS — exactly what the idea requires ============ -->
+  <section id="inputs" aria-labelledby="inputs-h">
+    <h2 id="inputs-h">Your inputs</h2>
+
+    <!-- EXAMPLE CONTROLS — replace with the idea's real inputs -->
+    <div class="row">
+      <div>
+        <label for="in-goal">Goal alignment <span class="hint">0–5</span></label>
+        <input id="in-goal" type="range" min="0" max="5" step="1" value="4"
+               data-input="goal" oninput="render()">
+        <span class="val" id="out-goal">4</span>
+      </div>
+      <div>
+        <label for="in-cred">Credential value <span class="hint">0–5</span></label>
+        <input id="in-cred" type="range" min="0" max="5" step="1" value="3"
+               data-input="cred" oninput="render()">
+        <span class="val" id="out-cred">3</span>
+      </div>
+    </div>
+
+    <label for="in-motivation">Motivation without external pressure <span class="hint">0–5</span></label>
+    <input id="in-motivation" type="range" min="0" max="5" step="1" value="4"
+           data-input="motivation" oninput="render()">
+    <span class="val" id="out-motivation">4</span>
+
+    <div class="row">
+      <div>
+        <label for="in-hours">Time per week (hours)</label>
+        <input id="in-hours" type="number" min="1" max="40" step="1" value="6"
+               data-input="hours" oninput="render()">
+      </div>
+      <div>
+        <label for="in-cost">Cost ($)</label>
+        <input id="in-cost" type="number" min="0" step="10" value="300"
+               data-input="cost" oninput="render()">
+      </div>
+    </div>
+    <!-- /EXAMPLE CONTROLS -->
+
+    <div class="actions">
+      <button type="button" class="ghost" onclick="loadExample()">Load example</button>
+      <button type="button" class="ghost" onclick="resetAll()">Reset</button>
+    </div>
+  </section>
+
+  <!-- ============ RESULT — the idea's output, WITH reasoning ============ -->
+  <section id="result" aria-labelledby="result-h" aria-live="polite">
+    <h2 id="result-h">Result</h2>
+    <p class="verdict" id="verdict">—</p>
+    <p class="score" id="score"></p>
+    <ul class="reasons" id="reasons"></ul>
+  </section>
+
+  <!-- ============ ABOUT — plain-language idea + provenance ============ -->
+  <section id="about" aria-labelledby="about-h">
+    <h2 id="about-h">About this app</h2>
+    <p class="about" id="about-text">
+      Extracted from <em>source</em>. Replace this with a plain-language statement
+      of the idea and cite where it came from.
+    </p>
+    <details>
+      <summary>Rules &amp; assumptions</summary>
+      <p class="about" id="rules-text">
+        State the exact rules used, and mark anything you filled in with
+        <code>[inferred]</code>.
+      </p>
+    </details>
+  </section>
+
+  <footer>Generated with idea2flashapp · single file · works offline</footer>
+</div>
+
+<script>
+/* ------------------------------------------------------------------ *
+ * 1. IDEA DATA — rules, weights, and copy lifted from the source.
+ *    EXAMPLE: a course-enrollment decision. Replace entirely.
+ * ------------------------------------------------------------------ */
+const IDEA = {
+  weights: { goal: 3, cred: 2, motivation: 2 }, // per-point value of each 0–5 rating
+  hoursBonusPerHour: 0.4,                       // more available time helps
+  costPenaltyPerDollar: 0.01,                   // cost hurts, scaled down
+  thresholds: { enroll: 28, try: 16 },          // score cut-offs for the verdict
+  inferred: true                                // these numbers were filled in
+};
+
+/* ------------------------------------------------------------------ *
+ * 2. LOGIC — pure. inputs in, {result, reasons} out. No DOM here.
+ * ------------------------------------------------------------------ */
+function evaluate(i){
+  const goal = Number(i.goal) || 0;
+  const cred = Number(i.cred) || 0;
+  const motivation = Number(i.motivation) || 0;
+  const hours = Math.max(1, Number(i.hours) || 1);
+  const cost = Number(i.cost) || 0;
+
+  const w = IDEA.weights;
+  const goalPts  = w.goal * goal;
+  const credPts  = w.cred * cred;
+  const motPts   = w.motivation * motivation;
+  const hoursPts = IDEA.hoursBonusPerHour * Math.min(hours, 40);
+  const costPts  = IDEA.costPenaltyPerDollar * cost;
+  const score    = goalPts + credPts + motPts + hoursPts - costPts;
+
+  const result =
+    score >= IDEA.thresholds.enroll ? "Enroll" :
+    score >= IDEA.thresholds.try    ? "Try the first week" :
+                                      "Skip";
+
+  const reasons = [
+    { d:  1, t: `Goal alignment +${goalPts.toFixed(1)}` },
+    { d:  1, t: `Credential value +${credPts.toFixed(1)}` },
+    { d:  1, t: `Motivation +${motPts.toFixed(1)}` },
+    { d:  1, t: `Available time +${hoursPts.toFixed(1)}` },
+    { d: -1, t: `Cost drag −${costPts.toFixed(1)}` }
+  ];
+
+  return { score, result, reasons };
+}
+
+/* ------------------------------------------------------------------ *
+ * 3. STATE — read the form, persist to localStorage.
+ * ------------------------------------------------------------------ */
+const SLUG = "{{SLUG}}";
+const KEY = "flashapp:" + SLUG + ":state";
+
+function readInputs(){
+  const o = {};
+  document.querySelectorAll("[data-input]").forEach(el=>{
+    o[el.dataset.input] = (el.type === "number" || el.type === "range")
+      ? Number(el.value) : el.value;
+  });
+  return o;
+}
+function saveState(){ try{ localStorage.setItem(KEY, JSON.stringify(readInputs())); }catch(e){} }
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(KEY) || "null");
+    if(!s) return;
+    Object.entries(s).forEach(([k,v])=>{
+      const el = document.querySelector(`[data-input="${k}"]`);
+      if(el) el.value = v;
+    });
+  }catch(e){}
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. RENDER — inputs -> view of evaluate() output.
+ * ------------------------------------------------------------------ */
+function render(){
+  const { score, result, reasons } = evaluate(readInputs());
+
+  document.getElementById("verdict").textContent = result;
+  document.getElementById("score").textContent =
+    `Score ${score.toFixed(1)} · thresholds ≥${IDEA.thresholds.enroll} / ${IDEA.thresholds.try}`;
+
+  const ul = document.getElementById("reasons");
+  ul.innerHTML = "";
+  reasons.forEach(r=>{
+    const li = document.createElement("li");
+    li.className = r.d >= 0 ? "pos" : "neg";
+    li.textContent = r.t;
+    ul.appendChild(li);
+  });
+
+  document.querySelectorAll("[data-input]").forEach(el=>{
+    if(el.type !== "range") return;
+    const out = document.getElementById("out-" + el.dataset.input);
+    if(out) out.textContent = el.value;
+  });
+
+  saveState();
+}
+
+/* ------------------------------------------------------------------ *
+ * 5. BOOT — wire up, load example.
+ * ------------------------------------------------------------------ */
+const EXAMPLE = { goal: 4, cred: 3, motivation: 4, hours: 6, cost: 300 };
+function loadExample(){
+  Object.entries(EXAMPLE).forEach(([k,v])=>{
+    const el = document.querySelector(`[data-input="${k}"]`);
+    if(el) el.value = v;
+  });
+  render();
+}
+function resetAll(){
+  document.querySelectorAll("[data-input]").forEach(el=>{
+    el.value = el.type === "range" ? el.min : (el.type === "number" ? 0 : "");
+  });
+  render();
+}
+loadState();
+render();
+</script>
+</body>
+</html>
